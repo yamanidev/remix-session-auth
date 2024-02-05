@@ -1,5 +1,8 @@
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 import { Form, Link } from '@remix-run/react';
+import { signup } from '~/models/user.server';
+import { getUserIdFromSession, getUserSessionHeader } from '~/utils/session.server';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Sign up | Remix Session based Authentication' }];
@@ -10,7 +13,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const name = form.get('name');
   const email = form.get('email');
   const password = form.get('password');
-  console.log({ name, email, password });
+  const user = await signup(name as string, email as string, password as string);
+  const header = await getUserSessionHeader(user);
+
+  return redirect('/', {
+    headers: {
+      'Set-Cookie': header
+    }
+  });
+};
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserIdFromSession(request);
+  if (user) return redirect('/');
   return null;
 };
 
@@ -74,7 +89,7 @@ export default function SignUp() {
         </Form>
         <div className="mt-6 text-center">
           <p>Already have an account?</p>
-          <Link to="/login" className="btn btn-link btn-sm leading-none">
+          <Link to="/" className="btn btn-link btn-sm leading-none">
             Log in
           </Link>
         </div>
