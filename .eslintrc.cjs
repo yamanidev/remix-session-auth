@@ -46,6 +46,9 @@ module.exports = {
         'import/resolver': {
           typescript: {}
         }
+      },
+      rules: {
+        'react/no-unescaped-entities': 'off'
       }
     },
 
