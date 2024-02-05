@@ -1,5 +1,8 @@
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import { redirect } from '@remix-run/node';
 import { Link } from '@remix-run/react';
+import { login } from '~/models/user.server';
+import { getUserIdFromSession, getUserSessionHeader } from '~/utils/session.server';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Log in | Remix Session based Authentication' }];
@@ -9,7 +12,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const form = await request.formData();
   const email = form.get('email');
   const password = form.get('password');
-  console.log({ email, password });
+  const user = await login(email as string, password as string);
+  if (user) {
+    const header = await getUserSessionHeader(user);
+
+    return redirect('/', {
+      headers: {
+        'Set-Cookie': header
+      }
+    });
+  }
+  return null;
+};
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await getUserIdFromSession(request);
+  if (user) return redirect('/');
   return null;
 };
 
