@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: remix-session-auth-postgres
+    env_file: .env
+    image: postgres
+    ports:
+      - '5432:5432'
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: remix-session-auth-pgadmin
+    env_file: .env
+    image: dpage/pgadmin4
+    ports:
+      - '5050:80'
+    networks:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
